@@ -1,4 +1,4 @@
-# app.py (Optimized Dark Theme)
+# app.py (NLTK Punkt Fix)
 
 import streamlit as st
 import joblib
@@ -7,10 +7,23 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 import numpy as np
+import os # Import os module
 
 # --- Place st.set_page_config() as the VERY FIRST Streamlit command ---
 # This must be the first Streamlit command executed in the script.
 st.set_page_config(page_title="SMS Spam Classifier", page_icon="✉️", layout="centered", initial_sidebar_state="expanded")
+
+# --- Set NLTK Data Path (Crucial for deployment environments) ---
+# Define a directory to store NLTK data. Using a relative path within the app's
+# root ensures it's persistent and accessible in the Streamlit Cloud environment.
+NLTK_DATA_DIR = os.path.join(os.path.dirname(__file__), 'nltk_data')
+if not os.path.exists(NLTK_DATA_DIR):
+    os.makedirs(NLTK_DATA_DIR)
+nltk.data.path.append(NLTK_DATA_DIR)
+
+# --- Global variables for NLTK components, initialized later ---
+global_stop_words = None
+global_stemmer = None
 
 # --- 1. Load Saved Model, Vectorizer, and Download NLTK Data ---
 @st.cache_resource # Cache the loading of heavy resources and NLTK downloads
@@ -18,7 +31,7 @@ def load_all_resources():
     """
     Loads the trained Random Forest model, TF-IDF vectorizer,
     list of numerical features, and ensures NLTK data is downloaded.
-    This function also initializes the global NLTK components for consistent use.
+    This function also initializes the global NLTK components.
     """
     try:
         # Load the pre-trained machine learning model and vectorizer
@@ -26,16 +39,13 @@ def load_all_resources():
         tfidf_vectorizer = joblib.load('tfidf_vectorizer.pkl')
         numerical_features_list = joblib.load('numerical_features_list.pkl')
         
-        # --- NLTK Data Download ---
-        # NLTK data (stopwords and punkt) is required for text preprocessing.
-        # nltk.download() checks if data is already present before attempting a download,
-        # making this robust for both local runs and cloud deployments.
-        nltk.download('stopwords', quiet=True) # quiet=True to suppress download messages in logs
-        nltk.download('punkt', quiet=True)     # quiet=True to suppress download messages in logs
+        # --- NLTK Data Download (inside cache_resource for efficiency and robustness) ---
+        # Specify download_dir to ensure NLTK data goes into our controlled directory
+        nltk.download('stopwords', download_dir=NLTK_DATA_DIR, quiet=True)
+        nltk.download('punkt', download_dir=NLTK_DATA_DIR, quiet=True)
         # --- END NLTK Data Download ---
 
         # Initialize NLTK components *after* their required data has been downloaded.
-        # These are set as global variables to be accessible by preprocessing functions.
         global global_stop_words
         global global_stemmer
         global_stop_words = set(stopwords.words('english'))
@@ -44,50 +54,41 @@ def load_all_resources():
         return model, tfidf_vectorizer, numerical_features_list
 
     except FileNotFoundError:
-        # Provide a clear error message if essential model files are missing.
         st.error("Error: Model files not found. Please ensure 'tuned_random_forest_spam_classifier.pkl', 'tfidf_vectorizer.pkl', and 'numerical_features_list.pkl' are in the same directory as this script.")
-        st.stop() # Halt the application gracefully.
+        st.stop()
     except Exception as e:
-        # Catch any other unexpected errors during the loading process.
         st.error(f"An unexpected error occurred while loading resources: {e}")
-        st.stop() # Halt the application.
+        st.stop()
 
 # Call the function to load all resources and download NLTK data once when the app starts.
-# This ensures all necessary components are ready before the UI is rendered.
 model, tfidf_vectorizer, numerical_features_list = load_all_resources()
 
 # --- 2. Define Text Preprocessing Functions (Identical to Training Phase) ---
-# These functions must exactly mirror the preprocessing steps used during model training
-# to ensure consistent feature extraction for new input messages.
-
 def clean_text(text):
     """
-    Applies the same text cleaning steps as during training:
-    lowercase conversion, punctuation removal, tokenization, stop word removal, and stemming.
+    Applies the same text cleaning steps as during training.
+    Uses the globally initialized NLTK components.
     """
-    text = text.lower() # Convert text to lowercase
-    text = ''.join([char for char in text if char not in string.punctuation]) # Remove punctuation
-    words = nltk.word_tokenize(text) # Tokenize text into words
+    text = text.lower()
+    text = ''.join([char for char in text if char not in string.punctuation])
+    words = nltk.word_tokenize(text)
     cleaned_words = []
     for word in words:
-        # Filter out non-alphanumeric words and stop words, then apply stemming
         if word.isalnum() and word not in global_stop_words:
             cleaned_words.append(global_stemmer.stem(word))
-    return ' '.join(cleaned_words) # Join processed words back into a string
+    return ' '.join(cleaned_words)
 
 def extract_numerical_features(message):
     """
-    Extracts numerical features from a given message, replicating the feature
-    engineering done during the training phase.
+    Extracts numerical features from a given message.
     """
-    num_characters = len(message) # Total number of characters
-    num_words = len(nltk.word_tokenize(message)) # Number of words
-    num_sentences = len(nltk.sent_tokenize(message)) # Number of sentences
-    num_uppercase_chars = sum(1 for char in message if char.isupper()) # Count uppercase characters
-    num_digits = sum(1 for char in message if char.isdigit()) # Count digits
-    num_punctuation = sum(1 for char in message if char in string.punctuation) # Count punctuation marks
+    num_characters = len(message)
+    num_words = len(nltk.word_tokenize(message))
+    num_sentences = len(nltk.sent_tokenize(message))
+    num_uppercase_chars = sum(1 for char in message if char.isupper())
+    num_digits = sum(1 for char in message if char.isdigit())
+    num_punctuation = sum(1 for char in message if char in string.punctuation)
     
-    # Return as a NumPy array, reshaped to (1, -1) for horizontal stacking with TF-IDF features.
     return np.array([num_characters, num_words, num_sentences,
                      num_uppercase_chars, num_digits, num_punctuation]).reshape(1, -1)
 
@@ -95,48 +96,31 @@ def extract_numerical_features(message):
 st.title("✉️ SMS Spam Classifier")
 st.markdown("Enter an SMS message below to classify it as **Spam** or **Not Spam (Ham)**.")
 
-# Text input area where the user can type or paste an SMS message.
 user_input = st.text_area("Enter SMS message here:", height=150, help="Type or paste the SMS message you want to classify.")
 
-# Button to trigger the classification process.
 if st.button("Classify SMS"):
     if user_input.strip() == "":
-        st.warning("Please enter some text to classify.") # Prompt user if input is empty
+        st.warning("Please enter some text to classify.")
     else:
-        with st.spinner("Classifying..."): # Show a spinner while processing
-            # --- Preprocessing the user input ---
-            # Step 1: Clean the raw text input.
+        with st.spinner("Classifying..."):
             cleaned_input = clean_text(user_input)
-
-            # Step 2: Transform the cleaned text into TF-IDF features.
-            # Use the loaded tfidf_vectorizer's .transform() method.
             text_features = tfidf_vectorizer.transform([cleaned_input]).toarray()
-            
-            # Step 3: Extract numerical features from the original user input.
             numerical_features = extract_numerical_features(user_input)
-            
-            # Step 4: Combine all features into a single array.
-            # This array must have the same feature order as the training data.
             combined_features = np.hstack((text_features, numerical_features))
 
-            # --- Model Prediction ---
-            # Step 5: Make a prediction using the loaded Random Forest model.
-            prediction = model.predict(combined_features)[0] # Get the single prediction (0 for ham, 1 for spam)
-            prediction_proba = model.predict_proba(combined_features) # Get probability scores for both classes
+            prediction = model.predict(combined_features)[0]
+            prediction_proba = model.predict_proba(combined_features)
 
-            st.write("---") # Visual separator
-
-            # --- Display Classification Result ---
+            st.write("---")
             if prediction == 1:
-                st.error(f"**Prediction: SPAM!**") # Display a prominent error message for spam
-                st.markdown(f"**Confidence (Spam):** {prediction_proba[0][1]*100:.2f}%") # Show confidence for spam class
+                st.error(f"**Prediction: SPAM!**")
+                st.markdown(f"**Confidence (Spam):** {prediction_proba[0][1]*100:.2f}%")
             else:
-                st.success(f"**Prediction: NOT SPAM (HAM)**") # Display a prominent success message for ham
-                st.markdown(f"**Confidence (Ham):** {prediction_proba[0][0]*100:.2f}%") # Show confidence for ham class
-            st.write("---") # Visual separator
+                st.success(f"**Prediction: NOT SPAM (HAM)**")
+                st.markdown(f"**Confidence (Ham):** {prediction_proba[0][0]*100:.2f}%")
+            st.write("---")
 
 # --- Custom CSS for a consistent DARK THEME ---
-# This CSS aims to ensure all text and elements are perfectly visible on a dark background.
 st.markdown("""
 <style>
     /* Global styling for the entire app */
