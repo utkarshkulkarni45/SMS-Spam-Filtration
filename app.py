@@ -1,4 +1,4 @@
-# app.py (Final Corrected Version)
+# app.py (Text Readability Fix)
 
 import streamlit as st
 import joblib
@@ -122,9 +122,17 @@ if st.button("Classify SMS"):
                 st.markdown(f"**Confidence (Ham):** {prediction_proba[0][0]*100:.2f}%")
             st.write("---")
 
-# --- Custom CSS for better aesthetics ---
+# --- Custom CSS for better aesthetics and readability ---
 st.markdown("""
 <style>
+    /* Universal text color for better readability */
+    body {
+        color: #333333; /* Dark gray for general text */
+    }
+    .stBlock, .stText {
+        color: #333333; /* Ensure text inside blocks and Streamlit text elements is dark */
+    }
+
     /* Style for the Classify SMS button */
     .stButton>button {
         background-color: #4CAF50; /* Green background */
@@ -146,6 +154,7 @@ st.markdown("""
         border: 1px solid #ddd; /* Light grey border */
         padding: 10px; /* Padding inside the textarea */
         resize: vertical; /* Allow vertical resizing */
+        color: #333333; /* Ensure input text is dark */
     }
     /* Overall app container styling for better layout */
     .stApp {
@@ -156,6 +165,10 @@ st.markdown("""
         border-radius: 10px;
         background-color: white;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    /* Ensure Streamlit's headers are readable */
+    h1, h2, h3, h4, h5, h6 {
+        color: #1a1a1a; /* Very dark grey/near black for headers */
     }
 </style>
 """, unsafe_allow_html=True)
