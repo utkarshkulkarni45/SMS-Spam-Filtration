@@ -1,4 +1,4 @@
-# app.py (Text Readability Fix)
+# app.py (Forceful Readability Fix)
 
 import streamlit as st
 import joblib
@@ -122,21 +122,48 @@ if st.button("Classify SMS"):
                 st.markdown(f"**Confidence (Ham):** {prediction_proba[0][0]*100:.2f}%")
             st.write("---")
 
-# --- Custom CSS for better aesthetics and readability ---
+# --- Custom CSS for better aesthetics and **FORCEFUL READABILITY FIX** ---
 st.markdown("""
 <style>
-    /* Universal text color for better readability */
-    body {
-        color: #333333; /* Dark gray for general text */
+    /* Force all text to be light for visibility on dark backgrounds, then adjust specific elements */
+    * {
+        color: white !important; /* Force all text white */
     }
-    .stBlock, .stText {
-        color: #333333; /* Ensure text inside blocks and Streamlit text elements is dark */
+
+    /* Streamlit's main content wrapper - ensure light background */
+    .stApp {
+        background-color: #f0f2f6; /* Keep this light background */
     }
+
+    /* Sidebar background - ensure dark background */
+    .stSidebar {
+        background-color: #24292e; /* Dark background from your screenshot */
+    }
+    
+    /* Headers in the main content area - make them bright white */
+    h1, h2, h3, h4, h5, h6, .st-emotion-cache-10q7n27 { /* 10q7n27 is a common Streamlit class for labels */
+        color: white !important; /* Ensure all headers and labels are visible white */
+    }
+
+    /* Input text area and its label - ensure visibility */
+    label.css-1jc7a0p.e16fv1bt2, /* Specific label class that might have a dark text */
+    .stTextArea textarea {
+        color: white !important; /* Make sure text in input area is white */
+        background-color: #2e343e; /* Darker background for the input box itself */
+        border: 1px solid #666666; /* Lighter border for contrast */
+        padding: 10px;
+        border-radius: 8px;
+        resize: vertical;
+    }
+    .stTextArea label { /* Ensure the label above the text area is white */
+        color: white !important;
+    }
+
 
     /* Style for the Classify SMS button */
     .stButton>button {
         background-color: #4CAF50; /* Green background */
-        color: white; /* White text */
+        color: white !important; /* Ensure white text */
         font-size: 1.2em; /* Larger font size */
         padding: 10px 24px; /* Padding inside the button */
         border-radius: 8px; /* Rounded corners */
@@ -148,28 +175,30 @@ st.markdown("""
         background-color: #45a049; /* Darker green on hover */
         box-shadow: 3px 3px 8px rgba(0,0,0,0.3); /* Larger shadow on hover */
     }
-    /* Style for the text input area */
-    .stTextArea textarea {
-        border-radius: 8px; /* Rounded corners */
-        border: 1px solid #ddd; /* Light grey border */
-        padding: 10px; /* Padding inside the textarea */
-        resize: vertical; /* Allow vertical resizing */
-        color: #333333; /* Ensure input text is dark */
-    }
-    /* Overall app container styling for better layout */
-    .stApp {
-        background-color: #f0f2f6; /* Light background for the app */
-    }
+
+    /* General Streamlit block styling for main content area (if applicable) */
     .stBlock {
         padding: 20px;
         border-radius: 10px;
-        background-color: white;
+        background-color: #333940; /* Slightly lighter dark grey for content blocks */
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
-    /* Ensure Streamlit's headers are readable */
-    h1, h2, h3, h4, h5, h6 {
-        color: #1a1a1a; /* Very dark grey/near black for headers */
+    
+    /* Ensure markdown text is visible (e.g., "Enter an SMS message below...") */
+    .stMarkdown, p, li {
+        color: white !important; /* Make sure all markdown and paragraph text is white */
     }
+
+    /* Streamlit success/error messages */
+    .stAlert, .stNotification {
+        color: black !important; /* Ensure text in alerts/notifications is readable */
+        background-color: lightgray !important; /* Or a color that contrasts with the message text */
+    }
+    .stAlert p, .stNotification p {
+        color: black !important; /* Specific for paragraph text inside alerts */
+    }
+
+
 </style>
 """, unsafe_allow_html=True)
 
