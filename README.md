@@ -71,12 +71,34 @@ This project successfully developed a highly accurate and reliable SMS spam clas
 -   Investigate other ensemble methods or stacking different models.
 -   **Deploy the model as a web service (e.g., using Flask or Streamlit) for interactive predictions.**
 
-## How to Run (if applicable, e.g., for a Kaggle Notebook or local setup)
-1.  Clone this repository: `git clone <your-repo-link>`
-2.  Navigate to the project directory.
-3.  Ensure you have Python 3.x installed.
-4.  Install the required libraries: `pip install pandas numpy scikit-learn matplotlib seaborn nltk joblib kagglehub`
-5.  (If running locally) Download the 'SMS Spam Collection Dataset' (`spam.csv`) from Kaggle and place it in the project root. (If on Kaggle Notebook, dataset access is automatic).
-6.  Run the Jupyter Notebook `your_notebook_name.ipynb` sequentially.
+## How to Run
+1.  **Clone the repository:**
+    ```bash
+    git clone [https://github.com/utkarshkulkarni45/SMS-Spam-Filtration.git](https://github.com/utkarshkulkarni45/SMS-Spam-Filtration.git)
+    cd SMS-Spam-Filtration
+    ```
+2.  **Install Python 3.10.x:**
+    It is highly recommended to use **Python 3.10.x** (e.g., [Python 3.10.12](https://www.python.org/downloads/release/python-31012/)) for optimal compatibility with `scikit-learn==1.2.2`. Ensure you select "Add Python to PATH" during installation.
+3.  **Create and Activate a Virtual Environment:**
+    ```bash
+    # Create a virtual environment using Python 3.10
+    py -3.10 -m venv spam_app_env
 
+    # Activate the virtual environment
+    # On Windows Command Prompt:
+    spam_app_env\Scripts\activate
+    # On Git Bash / macOS / Linux:
+    # source spam_app_env/bin/activate
+    ```
+    *(Note: `spam_app_env` folder is ignored by Git and will not be pushed to the repository.)*
+4.  **Install Dependencies:**
+    With the virtual environment activated, install all required packages:
+    ```bash
+    pip install -r requirements.txt
+    ```
+5.  **Run the Streamlit Application:**
+    ```bash
+    streamlit run app.py
+    ```
+    Your application should open in your default web browser (usually at `http://localhost:8501`).
 ---

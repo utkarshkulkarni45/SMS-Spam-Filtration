@@ -1,7 +1,7 @@
 # Virtual environment
 venv/
 .venv/
-spam_app_env/  # Add this specifically for your current venv name
+spam_app_env/  # <--- THIS IS CRUCIAL FOR YOUR CURRENT VENV NAME
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -27,7 +27,7 @@ __pycache__/
 *.pkl
 *.joblib
 *.h5
-*.csv  # Only if your dataset is large and not meant for git
+# *.csv  # Uncomment if you want to ignore CSVs (e.g., large datasets)
 *.zip
 
 # Logs
