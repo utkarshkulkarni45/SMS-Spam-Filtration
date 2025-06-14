@@ -1,0 +1,34 @@
+# Virtual environment
+venv/
+.venv/
+spam_app_env/  # Add this specifically for your current venv name
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyd
+*.pyo
+
+# C extensions
+*.so
+*.dll
+*.dylib
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Jupyter Notebook files
+.ipynb_checkpoints/
+
+# Saved models and data (if you don't want them in Git)
+*.pkl
+*.joblib
+*.h5
+*.csv  # Only if your dataset is large and not meant for git
+*.zip
+
+# Logs
+*.log
